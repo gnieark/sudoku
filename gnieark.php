@@ -1,6 +1,6 @@
 <?php
 //separer les map
-$grids=explode("\n",str_replace(array("+-----------------+\n","|"),"",file_get_contents("easy.txt")));
+$grids=explode("\n",str_replace(array("+-----------------+\n","|"),"",file_get_contents("easy.txt")."\n".file_get_contents("medium.txt")."\n".file_get_contents("hard.txt")));
 $grid=array();
 foreach($grids as $gridLine){
     $lineArray=array();
@@ -9,54 +9,50 @@ foreach($grids as $gridLine){
     }
     $grid[]=$lineArray;
     if(count($grid)==9){
+        //viewGrid($grid);
          viewGrid(resolveSudoku($grid));
          $grid=array();
     }
 }
 
 function resolveSudokuByBruteforce($grille){
-   
-
-    $possib=array();
     //se placer sur la première case non remplie
-    for ($y=0;$y<9;$y++){
-        for($x=0;$x<9;$x++){
-            if($grille[$y][$x]==" "){
-                //$possib[$x."-".$y]=array();
-                //enregistrer toutes les possibilités sur cette case
+    $x=0;
+    $y=0;
+    for($i=0; (($grille[$y][$x]<>" ")&&($i<81));$i++){
+        $y=(int)($i/9);
+        $x=fmod($i,9);
+    }
+    if(($i==81)&&($grille[8][8]<>" ")){
+        //la grille est déjà pleine
+        return $grille;
+    }
+    
+    //enregistrer toutes les possibilités sur cette case
+    $canPlay=false;
+    for($k=1;$k<10;$k++){
+        if(canBePlaced($k,$x,$y,$grille)){
+            //$possib[$x."-".$y][]=$k;
+            $canPlay=true;
+            $grilleTemp=$grille;
+            $grilleTemp[$y][$x]=$k;
+            if($gr=resolveSudokuByBruteforce($grilleTemp)){
+                return $gr;
+            }else{
+                //en fait, non , on ne peut pas jouer là
                 $canPlay=false;
-                for($k=1;$k<10;$k++){
-                    if(canBePlaced($k,$x,$y,$grille)){
-                        //$possib[$x."-".$y][]=$k;
-                        $canPlay=true;
-                        $grilleTemp=$grille;
-                        $grilleTemp[$y][$x]=$k;
-                        if($gr=resolveSudokuByBruteforce($grilleTemp)){
-                            return $gr;
-                        }else{
-                            //en fait, non , on ne peut pas jouer là
-                            $canPlay=false;
-                        }
-                    }
-                }
-                
-                if(!$canPlay){
-                    return false;
-                }
             }
-            
-            
-            
         }
     }
-    /*
-    if(count($possib==1)){
-        //y a qu'une case à jouer
-        list($x,$y)=explode("-",array_keys($possib)[0]);
-        $grilleTemp[$y][$x]=$possib[$x."-".$y][0];
-        return $grilleTemp;
+                
+    if(!$canPlay){
+       // echo "CAN'T:".$x." ".$y."\n";
+        //viewGrid($grille);
+        return false;
     }
-    */
+
+            
+
 }
 
 function resolveSudoku($grille){
@@ -78,6 +74,7 @@ function resolveSudoku($grille){
                 if($grid=resolveSudokuByBruteforce($grille)){
                     return $grid;
                 }else{
+                    
                     return $grille;
                 }
             }
