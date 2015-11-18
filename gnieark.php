@@ -14,6 +14,51 @@ foreach($grids as $gridLine){
     }
 }
 
+function resolveSudokuByBruteforce($grille){
+   
+
+    $possib=array();
+    //se placer sur la première case non remplie
+    for ($y=0;$y<9;$y++){
+        for($x=0;$x<9;$x++){
+            if($grille[$y][$x]==" "){
+                //$possib[$x."-".$y]=array();
+                //enregistrer toutes les possibilités sur cette case
+                $canPlay=false;
+                for($k=1;$k<10;$k++){
+                    if(canBePlaced($k,$x,$y,$grille)){
+                        //$possib[$x."-".$y][]=$k;
+                        $canPlay=true;
+                        $grilleTemp=$grille;
+                        $grilleTemp[$y][$x]=$k;
+                        if($gr=resolveSudokuByBruteforce($grilleTemp)){
+                            return $gr;
+                        }else{
+                            //en fait, non , on ne peut pas jouer là
+                            $canPlay=false;
+                        }
+                    }
+                }
+                
+                if(!$canPlay){
+                    return false;
+                }
+            }
+            
+            
+            
+        }
+    }
+    /*
+    if(count($possib==1)){
+        //y a qu'une case à jouer
+        list($x,$y)=explode("-",array_keys($possib)[0]);
+        $grilleTemp[$y][$x]=$possib[$x."-".$y][0];
+        return $grilleTemp;
+    }
+    */
+}
+
 function resolveSudoku($grille){
    
     //compter les cases libres
@@ -27,6 +72,18 @@ function resolveSudoku($grille){
     }
   
     while( $numberOfFreeCases>0){
+        if(isset($lastNumberOfFreeCases)){
+            if($lastNumberOfFreeCases == $numberOfFreeCases){
+                //semble bloqué
+                if($grid=resolveSudokuByBruteforce($grille)){
+                    return $grid;
+                }else{
+                    return $grille;
+                }
+            }
+        }
+        $lastNumberOfFreeCases = $numberOfFreeCases;
+    
        // echo $numberOfFreeCases."\n";
         //toutes les cases
         for ($y=0;$y<9;$y++){
